@@ -7,7 +7,7 @@ using Inventory.Model;
 
 namespace Inventory.View
 {
-    public class InventoryView : MonoBehaviour
+    public sealed class InventoryView : MonoBehaviour
     {
         [Header("Grid")]
         [SerializeField] private Transform _gridRoot;
@@ -33,18 +33,30 @@ namespace Inventory.View
         {
             _controller = controller;
 
-            foreach (var top in _topItems)
-                top.Initialize(this);
+            if (_topItems != null)
+            {
+                foreach (var top in _topItems)
+                {
+                    if (top != null)
+                        top.Refresh();
+                }
+            }
 
-            _deleteButton.onClick.RemoveAllListeners();
-            _deleteButton.onClick.AddListener(OnDeleteClicked);
+            if (_deleteButton != null)
+            {
+                _deleteButton.onClick.RemoveAllListeners();
+                _deleteButton.onClick.AddListener(OnDeleteClicked);
+            }
 
-            _controller.InventoryChanged += RefreshAll;
-            _controller.SelectionChanged += OnSelectionChanged;
+            if (_controller != null)
+            {
+                _controller.InventoryChanged += RefreshAll;
+                _controller.SelectionChanged += OnSelectionChanged;
+            }
 
             BuildGrid();
             RefreshAll();
-            OnSelectionChanged(_controller.SelectedIndex);
+            OnSelectionChanged(_controller != null ? _controller.SelectedIndex : -1);
         }
 
         private void OnDestroy()
@@ -56,17 +68,31 @@ namespace Inventory.View
             _controller.SelectionChanged -= OnSelectionChanged;
         }
 
+        public void HideContextMenu()
+        {
+            if (_contextMenu != null)
+                _contextMenu.Hide();
+        }
+
         private void BuildGrid()
         {
-            for (int i = _gridRoot.childCount - 1; i >= 0; i--)
-                Destroy(_gridRoot.GetChild(i).gameObject);
-
+            for (int i = 0; i < _slots.Count; i++)
+            {
+                if (_slots[i] != null)
+                    Destroy(_slots[i].gameObject);
+            }
             _slots.Clear();
+
+            if (_controller == null || _gridRoot == null || _slotPrefab == null)
+            {
+                Debug.LogError("InventoryView.BuildGrid: missing references (controller/gridRoot/slotPrefab).");
+                return;
+            }
 
             for (int i = 0; i < _controller.Capacity; i++)
             {
                 var slot = Instantiate(_slotPrefab, _gridRoot);
-                slot.Initialize(this, i);
+                slot.Initialize(i);
                 _slots.Add(slot);
             }
         }
@@ -74,6 +100,9 @@ namespace Inventory.View
         private void RefreshAll()
         {
             ClearStatus();
+
+            if (_controller == null)
+                return;
 
             for (int i = 0; i < _slots.Count; i++)
             {
@@ -89,30 +118,53 @@ namespace Inventory.View
             for (int i = 0; i < _slots.Count; i++)
                 _slots[i].SetSelected(i == selectedIndex);
 
-            var item = selectedIndex >= 0 ? _controller.GetItemAt(selectedIndex) : null;
+            var item = (selectedIndex >= 0 && _controller != null) ? _controller.GetItemAt(selectedIndex) : null;
 
             if (item == null)
             {
-                _detailsIcon.enabled = false;
-                _detailsIcon.sprite = null;
-                _detailsName.text = string.Empty;
-                _detailsDescription.text = string.Empty;
-                _deleteButton.interactable = false;
+                if (_detailsIcon != null)
+                {
+                    _detailsIcon.enabled = false;
+                    _detailsIcon.sprite = null;
+                }
+
+                if (_detailsName != null)
+                    _detailsName.text = string.Empty;
+
+                if (_detailsDescription != null)
+                    _detailsDescription.text = string.Empty;
+
+                if (_deleteButton != null)
+                    _deleteButton.interactable = false;
 
                 return;
             }
 
-            _detailsIcon.enabled = item.Icon != null;
-            _detailsIcon.sprite = item.Icon;
-            _detailsName.text = item.DisplayName;
-            _detailsDescription.text = item.Description;
-            _deleteButton.interactable = true;
+            if (_detailsIcon != null)
+            {
+                _detailsIcon.enabled = item.Icon != null;
+                _detailsIcon.sprite = item.Icon;
+            }
+
+            if (_detailsName != null)
+                _detailsName.text = item.DisplayName;
+
+            if (_detailsDescription != null)
+                _detailsDescription.text = item.Description;
+
+            if (_deleteButton != null)
+                _deleteButton.interactable = true;
         }
 
         private void OnDeleteClicked()
         {
+            HideContextMenu();
+
+            if (_controller == null)
+                return;
+
             var ok = _controller.TryRemoveSelected();
-            if (ok == false)
+            if (!ok)
                 ShowStatus("Nothing to delete.");
         }
 
@@ -130,24 +182,32 @@ namespace Inventory.View
 
         public void OnSlotLeftClicked(int index)
         {
-            _contextMenu.Hide();
-            _controller.Select(index);
+            HideContextMenu();
+            _controller?.Select(index);
         }
 
         public void OnSlotRightClicked(int index, Vector2 screenPosition)
         {
+            if (_controller == null)
+                return;
+
             _controller.Select(index);
 
             var item = _controller.GetItemAt(index);
+
             if (item == null)
             {
-                _contextMenu.Hide();
+                HideContextMenu();
                 return;
             }
+
+            if (_contextMenu == null)
+                return;
 
             _contextMenu.Show(screenPosition, "Remove", () =>
             {
                 var ok = _controller.TryRemoveAt(index);
+
                 if (ok == false)
                     ShowStatus("Remove failed.");
             });
@@ -155,9 +215,13 @@ namespace Inventory.View
 
         public void OnTopItemRightClicked(ItemDefinition item, Vector2 screenPosition)
         {
+            if (_controller == null || item == null || _contextMenu == null)
+                return;
+
             _contextMenu.Show(screenPosition, "Add", () =>
             {
                 var ok = _controller.TryAdd(item);
+
                 if (ok == false)
                     ShowStatus("Inventory is full.");
             });
