@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Inventory.View
 {
-    public sealed class InventorySlotView : MonoBehaviour
+    public class InventorySlotView : MonoBehaviour
     {
         [SerializeField] private Image _icon;
         [SerializeField] private GameObject _selection;

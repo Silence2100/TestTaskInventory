@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f067799150567e347b099b2dc8ef9db5, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: 
-  _displayName: "\u041C\u0435\u0447"
-  _description: "\u0412\u0430\u0443 \u043C\u0435\u0447"
+  _name: "\u041C\u0435\u0447"
+  _description: "\u041A\u0440\u0435\u043F\u043A\u0438\u0439 \u043A\u043B\u0438\u043D\u043E\u043A,
+    \u043A\u043E\u0442\u043E\u0440\u044B\u0439 \u043D\u0435 \u043F\u043E\u0434\u0432\u0435\u0434\u0451\u0442
+    \u0432 \u0434\u043E\u043B\u0433\u043E\u043C \u043F\u043E\u0445\u043E\u0434\u0435."
   _icon: {fileID: 21300000, guid: 158be32ff2ccad14e8831bd617f89478, type: 3}

@@ -4,7 +4,7 @@ using Inventory.Model;
 
 namespace Inventory.Controller
 {
-    public sealed class InventoryController : MonoBehaviour
+    public class InventoryController : MonoBehaviour
     {
         private InventoryModel _model;
         private int _selectedIndex = -1;
@@ -26,9 +26,6 @@ namespace Inventory.Controller
 
         public ItemDefinition GetItemAt(int slotIndex)
         {
-            if (_model == null) 
-                return null;
-
             if (IsIndexValid(slotIndex) == false) 
                 return null;
 
@@ -37,9 +34,6 @@ namespace Inventory.Controller
 
         public void Select(int slotIndex)
         {
-            if (_model == null) 
-                return;
-
             if (IsIndexValid(slotIndex) == false)
                 slotIndex = -1;
 
@@ -52,12 +46,6 @@ namespace Inventory.Controller
 
         public bool TryAdd(ItemDefinition item)
         {
-            if (_model == null) 
-                return false;
-
-            if (item == null) 
-                return false;
-
             var slots = _model.Slots;
 
             for (int i = 0; i < slots.Length; i++)
@@ -68,9 +56,6 @@ namespace Inventory.Controller
                 slots[i] = item;
                 InventoryChanged?.Invoke();
 
-                if (_selectedIndex < 0)
-                    Select(i);
-
                 return true;
             }
 
@@ -79,10 +64,7 @@ namespace Inventory.Controller
 
         public bool TryRemoveAt(int slotIndex)
         {
-            if (_model == null) 
-                return false;
-
-            if (IsIndexValid(slotIndex) == false) 
+            if (IsIndexValid(slotIndex) == false)
                 return false;
 
             var slots = _model.Slots;
@@ -91,10 +73,10 @@ namespace Inventory.Controller
                 return false;
 
             slots[slotIndex] = null;
-            InventoryChanged?.Invoke();
 
-            if (_selectedIndex == slotIndex)
-                SelectionChanged?.Invoke(_selectedIndex);
+            CompactSlots();
+
+            InventoryChanged?.Invoke();
 
             return true;
         }
@@ -105,6 +87,28 @@ namespace Inventory.Controller
                 return false;
 
             return TryRemoveAt(_selectedIndex);
+        }
+
+        private void CompactSlots()
+        {
+            var slots = _model.Slots;
+
+            int writeIndex = 0;
+
+            for (int readIndex = 0; readIndex < slots.Length; readIndex++)
+            {
+                var item = slots[readIndex];
+                if (item == null)
+                    continue;
+
+                if (writeIndex != readIndex)
+                    slots[writeIndex] = item;
+
+                writeIndex++;
+            }
+
+            for (int i = writeIndex; i < slots.Length; i++)
+                slots[i] = null;
         }
 
         private bool IsIndexValid(int index)
