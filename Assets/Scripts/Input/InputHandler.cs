@@ -90,6 +90,7 @@ namespace Inventory.Input
             if (TryRaycast(out var hitGo, out var screenPos) == false)
             {
                 ClickedOutside?.Invoke();
+
                 return;
             }
 
@@ -106,6 +107,7 @@ namespace Inventory.Input
             if (TryGetComponentInParent(hitGo, out InventorySlotView slot))
             {
                 SlotRightClicked?.Invoke(slot.Index, screenPos);
+
                 return;
             }
 
@@ -167,6 +169,7 @@ namespace Inventory.Input
         private static bool TryGetComponentInParent<T>(GameObject gameObj, out T component) where T : Component
         {
             component = gameObj != null ? gameObj.GetComponentInParent<T>() : null;
+
             return component != null;
         }
     }

@@ -174,12 +174,14 @@ namespace Inventory.Controller
             if (item == null)
             {
                 _view.HideContextMenu();
+
                 return;
             }
 
             _view.ShowContextMenu(screenPosition, "Удалить", () =>
             {
                 var wasRemoved = _inventoryController.TryRemoveAt(index);
+
                 if (wasRemoved == false)
                     _view.ShowStatus(MessageRemoveFailed);
             });
@@ -193,6 +195,7 @@ namespace Inventory.Controller
             _view.ShowContextMenu(screenPosition, "Добавить", () =>
             {
                 var wasAdded = _inventoryController.TryAdd(item);
+
                 if (wasAdded == false)
                     _view.ShowStatus(MessageInventoryFull);
             });
@@ -206,6 +209,7 @@ namespace Inventory.Controller
             _view.HideContextMenu();
 
             var wasAdded = _inventoryController.TryAdd(item);
+
             if (wasAdded == false)
                 _view.ShowStatus(MessageInventoryFull);
         }

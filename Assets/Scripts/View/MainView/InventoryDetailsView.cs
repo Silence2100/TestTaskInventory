@@ -40,7 +40,7 @@ namespace Inventory.View
             _icon.enabled = item.Icon != null;
             _icon.sprite = item.Icon;
 
-            _name.text = item.DisplayName;
+            _name.text = item.Name;
 
             _description.text = item.Description;
 

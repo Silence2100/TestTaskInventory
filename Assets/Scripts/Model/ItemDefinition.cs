@@ -9,7 +9,7 @@ namespace Inventory.Model
         [SerializeField] private string _description;
         [SerializeField] private Sprite _icon;
 
-        public string DisplayName => _name;
+        public string Name => _name;
         public string Description => _description;
         public Sprite Icon => _icon;
     }
